@@ -4,58 +4,9 @@ const aiClient = require('./aiServiceClient');
 const supabase = require('./supabaseClient');
 const requireAuth = require('./authMiddleware');
 
-// Create or update user profile (sign-up)
-router.post('/', async (req, res) => {
-  const { id, email, username, password, bio, avatar } = req.body;
-  if (!email || !username || !password) return res.status(400).json({ error: 'Email, username, and password required' });
+// Custom auth is fully migrated to Supabase native Auth. 
+// Do not use this backend for login/signup anymore. 
 
-  // Real app: use Supabase Auth for signup. We use public.users here based on existing structure.
-  // Check if exists
-  let { data: existingUser } = await supabase.from('users').select('*').eq('email', email).limit(1).single();
-
-  if (existingUser) {
-    const updates = {};
-    if (bio !== undefined) updates.bio = bio;
-    if (avatar !== undefined) updates.avatar = avatar;
-    if (username) updates.username = username;
-
-    const { data: updated, error } = await supabase.from('users').update(updates).eq('id', existingUser.id).select().single();
-    if (error) return res.status(500).json({ error: error.message });
-    const { password_hash, ...safeUser } = updated;
-    return res.json(safeUser);
-  } else {
-    // New user
-    const { data: newUser, error } = await supabase.from('users').insert({
-      username,
-      email,
-      password_hash: password, // Mock hash logic
-      bio: bio || '',
-      avatar: avatar || ''
-    }).select().single();
-
-    if (error) return res.status(500).json({ error: error.message });
-    const { password_hash, ...safeUser } = newUser;
-    return res.json(safeUser);
-  }
-});
-
-// User login
-router.post('/login', async (req, res) => {
-  const { username, email, password } = req.body;
-
-  let query = supabase.from('users').select('*');
-  if (username) query = query.eq('username', username);
-  else if (email) query = query.eq('email', email);
-
-  const { data: user, error } = await query.eq('password_hash', password).limit(1).single();
-
-  if (user) {
-    const { password_hash, ...safeUser } = user;
-    res.json(safeUser);
-  } else {
-    res.status(401).json({ error: 'Invalid username/email or password' });
-  }
-});
 
 // Search users
 router.get('/search', requireAuth, async (req, res) => {
@@ -114,9 +65,8 @@ router.post('/remove-friend', requireAuth, async (req, res) => {
 
 // Get user by id
 router.get('/:id', requireAuth, async (req, res) => {
-  const { data: user, error } = await supabase.from('users').select('*').eq('id', req.params.id).single();
-  if (user) {
-    const { password_hash, ...safeUser } = user;
+  const { data: safeUser, error } = await supabase.from('users').select('*').eq('id', req.params.id).single();
+  if (safeUser) {
     res.json(safeUser);
   } else res.status(404).json({ error: 'User not found' });
 });

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const aiClient = require('./aiServiceClient');
 const supabase = require('./supabaseClient');
+const requireAuth = require('./authMiddleware');
 
 // Create or update user profile (sign-up)
 router.post('/', async (req, res) => {
@@ -57,7 +58,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Search users
-router.get('/search', async (req, res) => {
+router.get('/search', requireAuth, async (req, res) => {
   const { q } = req.query;
   const { data: found, error } = await supabase.from('users').select('id, username, email, avatar, bio')
     .or(`username.ilike.%${q}%,email.ilike.%${q}%`);
@@ -66,8 +67,12 @@ router.get('/search', async (req, res) => {
 });
 
 // Add friend
-router.post('/add-friend', async (req, res) => {
-  const { userId, friendId } = req.body;
+router.post('/add-friend', requireAuth, async (req, res) => {
+  const userId = req.user.id; // Securely take from JWT
+  const { friendId } = req.body;
+
+  if (!friendId) return res.status(400).json({ error: 'Missing friendId' });
+
   // Fetch current user's friends
   const { data: user } = await supabase.from('users').select('friends').eq('id', userId).single();
   const { data: friend } = await supabase.from('users').select('friends').eq('id', friendId).single();
@@ -88,8 +93,10 @@ router.post('/add-friend', async (req, res) => {
 });
 
 // Remove friend
-router.post('/remove-friend', async (req, res) => {
-  const { userId, friendId } = req.body;
+router.post('/remove-friend', requireAuth, async (req, res) => {
+  const userId = req.user.id; // Securely take from JWT
+  const { friendId } = req.body;
+
   const { data: user } = await supabase.from('users').select('friends').eq('id', userId).single();
   const { data: friend } = await supabase.from('users').select('friends').eq('id', friendId).single();
 
@@ -106,7 +113,7 @@ router.post('/remove-friend', async (req, res) => {
 });
 
 // Get user by id
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
   const { data: user, error } = await supabase.from('users').select('*').eq('id', req.params.id).single();
   if (user) {
     const { password_hash, ...safeUser } = user;
@@ -115,7 +122,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Get friends for a user
-router.get('/:id/friends', async (req, res) => {
+router.get('/:id/friends', requireAuth, async (req, res) => {
   const { data: user } = await supabase.from('users').select('friends').eq('id', req.params.id).single();
   if (user && user.friends && user.friends.length > 0) {
     const { data: friends } = await supabase.from('users').select('id, username, email, avatar, bio').in('id', user.friends);
@@ -126,13 +133,14 @@ router.get('/:id/friends', async (req, res) => {
 });
 
 // Build and save user taste profile (GMM)
-router.post('/:id/build-taste', async (req, res) => {
+router.post('/build-taste', requireAuth, async (req, res) => {
+  const userId = req.user.id;
   const { tracks } = req.body;
   if (!tracks || !Array.isArray(tracks) || tracks.length < 5) {
     return res.status(400).json({ error: 'Need at least 5 tracks to build a profile' });
   }
 
-  const { data: user } = await supabase.from('users').select('id').eq('id', req.params.id).single();
+  const { data: user } = await supabase.from('users').select('id').eq('id', userId).single();
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   try {

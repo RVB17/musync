@@ -44,7 +44,8 @@ router.post('/party', async (req, res) => {
 
 // POST /api/recommend/group
 router.post('/group', async (req, res) => {
-  const { primaryUserId, secondaryUserIds, trackPool } = req.body;
+  const primaryUserId = req.user.id; // Securely take from JWT
+  const { secondaryUserIds, trackPool } = req.body;
 
   if (!primaryUserId || !secondaryUserIds || !trackPool) {
     return res.status(400).json({ error: 'Missing primaryUserId, secondaryUserIds, or trackPool' });
@@ -78,7 +79,8 @@ router.post('/group', async (req, res) => {
 
 // POST /api/recommend/feedback
 router.post('/feedback', async (req, res) => {
-  const { userId, track, action } = req.body;
+  const userId = req.user.id; // Securely pull from JWT
+  const { track, action } = req.body;
   if (!userId || !track || !action) {
     return res.status(400).json({ error: 'Missing userId, track, or action' });
   }

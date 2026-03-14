@@ -13,7 +13,8 @@ router.get('/', async (req, res) => {
 
 // Create a new party
 router.post('/', async (req, res) => {
-  const { name, vibe = 'Chill', user, location = { lat: 0, lng: 0 } } = req.body;
+  const { name, vibe = 'Chill', location = { lat: 0, lng: 0 } } = req.body;
+  const user = req.user.id;
 
   const { data: party, error } = await supabase.from('parties').insert({
     name,
@@ -28,7 +29,8 @@ router.post('/', async (req, res) => {
 
 // Join a party by code
 router.post('/join', async (req, res) => {
-  const { code, user } = req.body;
+  const { code } = req.body;
+  const user = req.user.id;
   const { data: party } = await supabase.from('parties').select('*').eq('id', code).single();
 
   if (party && !party.members.includes(user)) {
@@ -45,7 +47,8 @@ router.post('/join', async (req, res) => {
 
 // Leave a party
 router.post('/leave', async (req, res) => {
-  const { code, userId } = req.body;
+  const { code } = req.body;
+  const userId = req.user.id;
   const { data: party } = await supabase.from('parties').select('*').eq('id', code).single();
 
   if (party) {

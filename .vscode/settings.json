@@ -1,0 +1,8 @@
+{
+    "python.defaultInterpreterPath": "./ai_engine/venv/bin/python",
+    "python.analysis.extraPaths": [
+        "./ai_engine",
+        "./ai_engine/venv/lib/python3.12/site-packages"
+    ],
+    "python.languageServer": "Default"
+}

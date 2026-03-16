@@ -1,39 +1,62 @@
 const express = require('express');
 const router = express.Router();
+const supabase = require('./supabaseClient');
 
-let groups = [
-  { id: 'g1', name: 'Best Friends', members: ['u1', 'u2'] },
-  { id: 'g2', name: 'Roommates', members: ['u1'] },
-];
+// Get all groups
+router.get('/', async (req, res) => {
+  const { data: groups, error } = await supabase.from('groups').select('*');
+  if (error) return res.status(500).json({ error: error.message });
 
-// Expose groups for invites logic
-router._groups = groups;
-
-router.get('/', (req, res) => {
-  // Populate members with user info
-  const users = require('./users')._users || [];
-  const groupsWithUsers = groups.map(g => ({
-    ...g,
-    members: g.members.map(id => users.find(u => u.id === id)).filter(Boolean)
-  }));
-  res.json(groupsWithUsers);
+  // For a robust app, you would join this with the users table to get member details.
+  // For now, we return the raw array of UUIDs and let the frontend fetch profiles if needed.
+  res.json(groups);
 });
 
-router.post('/', (req, res) => {
-  const { name, user } = req.body;
-  const group = { id: Math.random().toString(36).slice(2), name, members: [user] };
-  groups.push(group);
+// Create a persistent group
+router.post('/', async (req, res) => {
+  const { name } = req.body;
+  const user = req.user.id;
+
+  const { data: group, error } = await supabase.from('groups').insert({
+    name,
+    members: [user]
+  }).select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
   res.json(group);
 });
 
-router.post('/join', (req, res) => {
-  const { code, user } = req.body;
-  const group = groups.find(g => g.id === code);
+// Join a group by code
+router.post('/join', async (req, res) => {
+  const { code } = req.body;
+  const user = req.user.id;
+  const { data: group } = await supabase.from('groups').select('*').eq('id', code).single();
+
   if (group && !group.members.includes(user)) {
-    group.members.push(user);
-    res.json(group);
+    const members = [...(group.members || []), user];
+    const { data: updated, error } = await supabase.from('groups').update({ members }).eq('id', code).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(updated);
+  } else if (group) {
+    res.json(group); // Already joined
   } else {
-    res.status(404).json({ error: 'Group not found or already joined' });
+    res.status(404).json({ error: 'Group not found' });
+  }
+});
+
+// Leave a group
+router.post('/leave', async (req, res) => {
+  const { code } = req.body;
+  const userId = req.user.id;
+  const { data: group } = await supabase.from('groups').select('*').eq('id', code).single();
+
+  if (group) {
+    const members = (group.members || []).filter(id => id !== userId);
+    const { data: updated, error } = await supabase.from('groups').update({ members }).eq('id', code).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(updated);
+  } else {
+    res.status(404).json({ error: 'Group not found' });
   }
 });
 

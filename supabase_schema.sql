@@ -11,7 +11,7 @@ CREATE TABLE public.users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Create the Parties table
+-- Create the Parties table (Transient, location-based, host controls playback)
 CREATE TABLE public.parties (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -21,9 +21,18 @@ CREATE TABLE public.parties (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- Create the Groups table (Persistent, shared playlists, anyone can play anywhere)
+CREATE TABLE public.groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    members UUID[] DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.parties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.groups ENABLE ROW LEVEL SECURITY;
 
 -- +---------------------------------------------------------------+
 -- | RLS POLICIES FOR USERS TABLE                                  |
@@ -67,6 +76,26 @@ WITH CHECK (auth.role() = 'authenticated');
 -- 3. Allow any logged-in user to update a party (to join/leave)
 CREATE POLICY "Allow authenticated users to join/leave"
 ON public.parties
+FOR UPDATE
+USING (auth.role() = 'authenticated')
+WITH CHECK (auth.role() = 'authenticated');
+
+-- +---------------------------------------------------------------+
+-- | RLS POLICIES FOR GROUPS TABLE                                 |
+-- +---------------------------------------------------------------+
+
+CREATE POLICY "Allow members to view their groups"
+ON public.groups
+FOR SELECT
+USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated users to create groups"
+ON public.groups
+FOR INSERT
+WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow members to join/update groups"
+ON public.groups
 FOR UPDATE
 USING (auth.role() = 'authenticated')
 WITH CHECK (auth.role() = 'authenticated');

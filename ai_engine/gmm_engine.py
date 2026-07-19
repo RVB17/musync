@@ -68,51 +68,65 @@ def rebuild_gmm(params: Dict[str, Any]) -> GaussianMixture:
 
 def compute_party_overlap(users: List[Dict[str, Any]], candidate_tracks: List[Any], target_vibe: str = "Any") -> List[Dict[str, Any]]:
     """
-    The "Venn Diagram" method. A track must score decently across ALL user GMMs.
-    Applies vector masks based on the target_vibe.
+    Threshold Voting with Misery Penalty.
+    
+    Instead of multiplying probabilities (which collapses to ~0 in large groups),
+    this counts how many users "enjoy" each track (threshold voting) while applying
+    a penalty proportional to how many users actively dislike it (misery penalty).
+    
+    This scales well to large groups: a track loved by 12/15 people beats one
+    mildly liked by all 15, but tracks that anyone truly hates get penalized.
     """
     if not users or not candidate_tracks:
         return []
     
-    # 1. Rebuild all User GMMs
-    models = [rebuild_gmm(u) for u in users]
+    # Thresholds for scoring individual user enjoyment
+    ENJOY_THRESHOLD = 0.3    # User "enjoys" the track if their score >= this
+    MISERY_THRESHOLD = 0.05  # User actively dislikes if their score < this
     
+    models = [rebuild_gmm(u) for u in users]
     X_candidates = extract_features(candidate_tracks)
     scores = []
     
-    # 2. Score every candidate track
     for i, track_features in enumerate(X_candidates):
-        raw_track = candidate_tracks[i] # Need the raw object for vibe attributes
-        track_scores = []
+        raw_track = candidate_tracks[i]
+        user_scores = []
+        
         for gmm in models:
-            # score_samples returns log-likelihood
             log_prob = gmm.score_samples([track_features])[0]
-            
-            # Since density can be > 1 in continuous space, we apply a sigmoid-like 
-            # squeeze or just use the log_prob directly for ranking. 
-            # To make it a "0 to 1" feel for the Venn diagram, we'll scale it.
-            # A simple trick: e^(log_prob / D) where D is dimensions (5)
-            prob = np.exp(log_prob / 5.0) 
-            
-            # Cap at 1.0 for sanity in the frontend
-            prob_normalized = min(1.0, prob)
-            track_scores.append(prob_normalized)
-            
-        # 3. Apply Vibe Modifier Mask
+            prob = min(1.0, np.exp(log_prob / 5.0))
+            user_scores.append(prob)
+        
+        # 1. Threshold Voting: how many users enjoy this track?
+        votes = sum(1 for s in user_scores if s >= ENJOY_THRESHOLD)
+        vote_ratio = votes / len(models)
+        
+        # 2. Misery Penalty: penalize tracks that some users actively hate
+        #    Squared so 1 hater is a mild penalty, but 3+ haters is severe
+        miserable = sum(1 for s in user_scores if s < MISERY_THRESHOLD)
+        misery_penalty = (1.0 - miserable / len(models)) ** 2
+        
+        # 3. Average score across all users (for tiebreaking)
+        avg_score = float(np.mean(user_scores))
+        
+        # 4. Apply Vibe Modifier Mask
         vibe_multiplier = apply_vibe_penalty(raw_track, target_vibe)
-            
-        # 4. The Party Logic: Multiply the probabilities (Geometric mean approach).
-        # If any user *hates* the track (prob near 0), the total score crashes to 0.
-        party_score = np.prod(track_scores) * vibe_multiplier
+        
+        # 5. Combined score: vote ratio is primary signal, avg for nuance,
+        #    misery penalty ensures we don't alienate anyone, vibe filters context
+        party_score = (vote_ratio * 0.6 + avg_score * 0.4) * misery_penalty * vibe_multiplier
         
         scores.append({
             "track_id": candidate_tracks[i].id,
             "party_score": float(party_score),
-            "individual_scores": [float(s) for s in track_scores],
+            "votes": votes,
+            "total_users": len(models),
+            "misery_count": miserable,
+            "avg_score": avg_score,
+            "individual_scores": [float(s) for s in user_scores],
             "vibe_multiplier": float(vibe_multiplier)
         })
-        
-    # Sort by the highest party overlap score
+    
     scores.sort(key=lambda x: x["party_score"], reverse=True)
     return scores
 
@@ -151,41 +165,48 @@ def compute_group_recommendation(primary_user: Dict[str, Any], secondary_users: 
     scores.sort(key=lambda x: x["group_score"], reverse=True)
     return scores
 
-def get_gmm_centroid(params: Dict[str, Any]) -> np.ndarray:
-    """Calculates the weighted center of all clusters to find the 'Absolute Average' vibe."""
-    weights = np.array(params["weights"])
-    means = np.array(params["means"])
-    return np.average(means, axis=0, weights=weights)
-
 def compute_cf_distance(target_gmm: Dict[str, Any], global_gmms: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Finds the mathematically nearest users by comparing the geometric centroids of their GMMs.
-    Returns a sorted list of users (closest first).
+    Weighted sum of all cluster-pair similarities.
+    
+    Instead of collapsing each user's multi-cluster GMM into a single centroid
+    (which loses information about multi-modal tastes), this compares every cluster
+    in User A against every cluster in User B. A jazz+metal fan will match other
+    jazz fans AND other metal fans, rather than appearing as a generic "pop" centroid.
+    
+    The similarity between each pair of clusters is weighted by both clusters'
+    importance (GMM weights), so dominant taste clusters contribute more.
     """
     if "weights" not in target_gmm:
         return []
-
-    target_centroid = get_gmm_centroid(target_gmm)
+    
+    target_means = np.array(target_gmm["means"])
+    target_weights = np.array(target_gmm["weights"])
     results = []
     
     for global_id, gmm_params in global_gmms.items():
         if not gmm_params or "means" not in gmm_params:
             continue
-            
-        global_centroid = get_gmm_centroid(gmm_params)
         
-        # Euclidean distance in 5D space
-        dist = np.linalg.norm(target_centroid - global_centroid)
+        other_means = np.array(gmm_params["means"])
+        other_weights = np.array(gmm_params["weights"])
         
-        # Convert Euclidean distance to a 0.0 to 1.0 similarity score
-        # 0 distance = 1.0 similarity
-        similarity = 1.0 / (1.0 + float(dist))
+        # Compare every cluster in target against every cluster in other user
+        total_similarity = 0.0
+        for i, t_mean in enumerate(target_means):
+            for j, o_mean in enumerate(other_means):
+                # Euclidean distance between this pair of clusters
+                dist = np.linalg.norm(t_mean - o_mean)
+                pair_sim = 1.0 / (1.0 + dist)
+                
+                # Weight by how important each cluster is to its user
+                total_similarity += pair_sim * target_weights[i] * other_weights[j]
         
         results.append({
             "user_id": global_id,
-            "similarity": similarity
+            "similarity": float(total_similarity)
         })
-        
+    
     # Sort highest similarity (closest users) first
     results.sort(key=lambda x: x["similarity"], reverse=True)
     return results

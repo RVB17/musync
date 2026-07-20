@@ -97,7 +97,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Transition from stack to bottom tabs.
   - **Action**: Install `@react-navigation/bottom-tabs`. Rewrite `AppNavigator.tsx` to feature 4 main tabs: `Parties`, `Groups`, `Discover`, and `Profile`.
   - **Gate**: Bottom tab bar renders and successfully navigates between the four empty/placeholder screens.
-- [ ] **Task 5.3: Feedback Loop API (Node.js & AI Engine)**
+- [x] **Task 5.3: Feedback Loop API (Node.js & AI Engine)**
   - **Goal**: Allow users to steer their recommendations via likes/dislikes.
   - **Action**: Create `POST /api/users/feedback` in Express to accept batched votes (+1/-1) and track IDs. Create `POST /update-taste` in the Python AI Engine to adjust the user's GMM weights mathematically based on the batched features.
   - **Gate**: A batch of positive/negative feedback successfully shifts the user's GMM profile in Supabase.

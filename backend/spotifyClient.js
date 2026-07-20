@@ -86,9 +86,28 @@ async function getTopTrackFeatures(accessToken, limit = 50) {
   }
 }
 
+/**
+ * Fetches audio features for specific track IDs.
+ */
+async function getAudioFeatures(accessToken, trackIds) {
+  if (!trackIds || trackIds.length === 0) return [];
+  try {
+    const ids = trackIds.join(',');
+    const featuresRes = await axios.get(`https://api.spotify.com/v1/audio-features?ids=${ids}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    
+    return featuresRes.data.audio_features.filter(f => f !== null);
+  } catch (error) {
+    console.error("Spotify API Error (Audio Features):", error.response?.data || error.message);
+    throw error;
+  }
+}
+
 module.exports = {
   getAccessToken,
   getTopArtists,
   getUserTopGenres,
-  getTopTrackFeatures
+  getTopTrackFeatures,
+  getAudioFeatures
 };

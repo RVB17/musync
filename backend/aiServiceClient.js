@@ -102,10 +102,30 @@ async function submitFeedback(userGmm, trackFeatures, action) {
     }
 }
 
+/**
+ * Submits batched votes to the AI engine.
+ */
+async function updateTasteBatched(userGmm, feedbacks) {
+    try {
+        const response = await axios.post(`${AI_ENGINE_URL}/update-taste`, {
+            user_gmm: userGmm,
+            feedbacks: feedbacks.map(fb => ({
+                track_features: formatTrackForAI(fb.trackFeatures),
+                vote: fb.vote
+            }))
+        });
+        return response.data;
+    } catch (error) {
+        console.error("AI Engine Error (Update Taste):", error.response?.data || error.message);
+        throw error;
+    }
+}
+
 module.exports = {
     buildUserProfile,
     getPartyRecommendations,
     getGroupRecommendations,
     getSimilarUsers,
-    submitFeedback
+    submitFeedback,
+    updateTasteBatched
 };

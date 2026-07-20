@@ -33,6 +33,14 @@ class FeedbackRequest(BaseModel):
     track_features: TrackFeatures
     action: str # "like" or "skip"
 
+class BatchedFeedbackItem(BaseModel):
+    track_features: TrackFeatures
+    vote: int
+
+class BatchedFeedbackRequest(BaseModel):
+    user_gmm: Dict[str, Any]
+    feedbacks: List[BatchedFeedbackItem]
+
 class CFRequest(BaseModel):
     target_gmm: Dict[str, Any]
     global_gmms: Dict[str, Dict[str, Any]] # Map of user_id -> GMM parameters
@@ -78,6 +86,17 @@ def update_profile_feedback(request: FeedbackRequest):
     """
     updated_gmm = apply_feedback(request.user_gmm, request.track_features, request.action)
     return {"updated_gmm": updated_gmm}
+
+@app.post("/update-taste")
+def update_taste_batched(request: BatchedFeedbackRequest):
+    """
+    Updates the user's taste profile mathematically from batched votes.
+    """
+    current_gmm = request.user_gmm
+    for fb in request.feedbacks:
+        action = "like" if fb.vote > 0 else "skip"
+        current_gmm = apply_feedback(current_gmm, fb.track_features, action)
+    return {"updated_gmm": current_gmm}
 
 @app.post("/cf/match")
 def cf_match(request: CFRequest):

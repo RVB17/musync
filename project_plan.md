@@ -57,7 +57,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Gate**: Endpoint returns a continuous, mixed-variance list of tracks from Spotify that match the requested genre.
 
 ### Phase 3: Frontend Integration
-- [ ] **Task 3.1: Spotify OAuth & Login**
+- [x] **Task 3.1: Spotify OAuth & Login**
   - **Goal**: Replace dummy login with actual Spotify PKCE flow.
   - **Action**: Update `LoginScreen.tsx` to use `expo-auth-session`. Send the code to backend `/auth/spotify/exchange`. Store JWT.
   - **Gate**: User successfully logs in and JWT is stored in frontend state/storage.

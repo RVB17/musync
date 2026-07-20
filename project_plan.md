@@ -89,7 +89,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Gate**: The application behaves exactly as intended and is production-ready.
 
 ### Phase 5: V2 Architecture & Navigation Overhaul
-- [ ] **Task 5.1: Environment & Auth Overhaul**
+- [x] **Task 5.1: Environment & Auth Overhaul**
   - **Goal**: Fix version mismatches and detach Spotify from initial signup.
   - **Action**: Run `npx expo install --fix`. Update `LoginScreen.tsx` to use Supabase Email/Password or Social Auth. Move Spotify PKCE OAuth connection to `ProfileScreen.tsx`.
   - **Gate**: User can sign up without a Spotify account, then connect Spotify later.

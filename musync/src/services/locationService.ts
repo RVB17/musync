@@ -1,18 +1,16 @@
-import Geolocation from 'react-native-geolocation-service';
+import * as Location from 'expo-location';
 
-export const getCurrentLocation = () => {
-    return new Promise((resolve, reject) => {
-        Geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                resolve({ latitude, longitude });
-            },
-            (error) => {
-                reject(error);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
-    });
+export const getCurrentLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+        throw new Error('Permission to access location was denied');
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    return {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+    };
 };
 
 export const getGroupsByLocation = async (latitude?: number, longitude?: number) => {

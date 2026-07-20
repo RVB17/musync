@@ -36,18 +36,18 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Allow backend to fetch data from Spotify on behalf of users.
   - **Action**: Implement helper functions to use a user's `spotify_refresh_token` to get an access token, then fetch their top artists and genres (including sub-genres).
   - **Gate**: Function successfully retrieves top genres for a mock user from Spotify.
-- [ ] **Task 2.1.5: Retrospective Validation of Completed Tasks**
+- [x] **Task 2.1.5: Retrospective Validation of Completed Tasks**
   - **Goal**: Go back and write rigorous unit tests for Tasks 1.1, 1.2, 1.3, and 2.1.
   - **Action**: The previous tests were superficial. The Architect must now write actual, execution-based unit tests for the Supabase schema updates, the Invites routes, the CF endpoint, and the Spotify API functions. The Builder will implement any bug fixes discovered, and the Checker will verify them.
   - **Gate**: All comprehensive unit tests pass.
-- [ ] **Task 2.2: Compute Search Targets (Cluster Overlap & Discovery)**
+- [x] **Task 2.2: Compute Search Targets (Cluster Overlap & Discovery)**
   - **Goal**: Find GMM cluster sweet spots and ensure recommendations never run out.
   - **Action**: 
     - Calculate the mathematical average of overlapping clusters for the group (the "safe" zone).
     - **For Groups**: Apply a strict filter based on the *primary user's* GMM limits (e.g., if they hate acousticness, cap it), but intentionally inject a small % of "discovery" tracks that slightly exceed these limits to allow their profile to shift if they like them.
     - Output target feature ranges for both "Safe" and "Discovery" tracks.
   - **Gate**: Algorithm outputs correct target feature arrays given mock user GMMs.
-- [ ] **Task 2.3: Intelligent Recommendations Pipeline (Genres & Fallbacks)**
+- [x] **Task 2.3: Intelligent Recommendations Pipeline (Genres & Fallbacks)**
   - **Goal**: Connect target generation, Spotify Recommendations API, and AI scoring.
   - **Action**: 
     - Replace the concept of "Vibes" with a unified "Genres" system. 

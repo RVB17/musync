@@ -82,6 +82,26 @@ router.get('/:id/friends', requireAuth, async (req, res) => {
   }
 });
 
+// Get top tracks features
+router.get('/top-tracks', requireAuth, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const { data: userPriv, error } = await supabase.from('user_private').select('spotify_refresh_token').eq('id', userId).single();
+    if (error || !userPriv?.spotify_refresh_token) {
+      return res.status(400).json({ error: 'No spotify refresh token found' });
+    }
+    
+    const { getAccessToken, getTopTrackFeatures } = require('./spotifyClient');
+    const { access_token } = await getAccessToken(userPriv.spotify_refresh_token);
+    const tracks = await getTopTrackFeatures(access_token, 10);
+    
+    res.json(tracks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch top tracks' });
+  }
+});
+
 // Build and save user taste profile (GMM)
 router.post('/build-taste', requireAuth, async (req, res) => {
   const userId = req.user.id;

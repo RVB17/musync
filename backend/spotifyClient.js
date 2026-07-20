@@ -63,8 +63,32 @@ async function getUserTopGenres(accessToken) {
   return Array.from(genres);
 }
 
+/**
+ * Fetches the user's top tracks and their audio features from Spotify.
+ */
+async function getTopTrackFeatures(accessToken, limit = 50) {
+  try {
+    const tracksRes = await axios.get(`https://api.spotify.com/v1/me/top/tracks?limit=${limit}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    const tracks = tracksRes.data.items;
+    if (tracks.length === 0) return [];
+    
+    const ids = tracks.map(t => t.id).join(',');
+    const featuresRes = await axios.get(`https://api.spotify.com/v1/audio-features?ids=${ids}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    
+    return featuresRes.data.audio_features.filter(f => f !== null);
+  } catch (error) {
+    console.error("Spotify API Error (Top Track Features):", error.response?.data || error.message);
+    throw error;
+  }
+}
+
 module.exports = {
   getAccessToken,
   getTopArtists,
-  getUserTopGenres
+  getUserTopGenres,
+  getTopTrackFeatures
 };

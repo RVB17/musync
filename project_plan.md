@@ -61,7 +61,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Replace dummy login with actual Spotify PKCE flow.
   - **Action**: Update `LoginScreen.tsx` to use `expo-auth-session`. Send the code to backend `/auth/spotify/exchange`. Store JWT.
   - **Gate**: User successfully logs in and JWT is stored in frontend state/storage.
-- [ ] **Task 3.2: Profile & Taste Building**
+- [x] **Task 3.2: Profile & Taste Building**
   - **Goal**: Allow users to build their taste profile.
   - **Action**: Update `ProfileScreen.tsx`. Fetch user's top tracks from Spotify via backend, then call `/users/build-taste` to train the GMM. Display success state.
   - **Gate**: User's GMM profile is populated in Supabase after clicking "Build Profile".

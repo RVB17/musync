@@ -26,19 +26,19 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Action**: Add an Express route (`GET /api/recommend/similar-users`) that fetches the current user's GMM, fetches all other users' GMMs from Supabase, and calls `aiClient.getSimilarUsers()`.
   - **Gate**: API returns a sorted list of similar users given a valid JWT.
 
-### Phase 2: Intelligent Candidate Generation
+### Phase 2: Intelligent Candidate Generation & Genre Mixing
 - [ ] **Task 2.1: Spotify API Integration for Backend**
   - **Goal**: Allow backend to fetch data from Spotify on behalf of users.
-  - **Action**: Implement helper functions in backend to use a user's `spotify_refresh_token` to get an access token, then fetch their top artists and genres.
-  - **Gate**: Function successfully retrieves top genres for a mock user from Spotify.
-- [ ] **Task 2.2: Compute Search Targets (Cluster Overlap)**
-  - **Goal**: Find GMM cluster sweet spots.
-  - **Action**: Implement logic in backend to find overlapping clusters across multiple users in 5D space and calculate target audio features (danceability, energy, etc.).
-  - **Gate**: Algorithm outputs correct target feature ranges given mock user GMMs.
-- [ ] **Task 2.3: Intelligent Party Recommendations Pipeline**
-  - **Goal**: Connect target generation, Spotify Recommendations API, and AI scoring.
-  - **Action**: Update `POST /api/recommend/party` to: 1) Find sweet spots and genre seeds, 2) Fetch candidate tracks from Spotify, 3) Score them via AI engine, 4) Return ranked list.
-  - **Gate**: Endpoint returns a ranked list of tracks from Spotify that match the group's taste.
+  - **Action**: Implement helper functions to use `spotify_refresh_token` to get an access token. Fetch top artists and aggregate a list of common "Genres" (including sub-genres) across the group.
+  - **Gate**: Function successfully retrieves and aggregates top genres for a mock group.
+- [ ] **Task 2.2: Continuous Candidate Pooling (Variance & Fallback)**
+  - **Goal**: Generate an endless, mixed pool of candidate songs from Spotify.
+  - **Action**: Implement logic to query Spotify using the aggregated Genres. Query for songs perfectly hitting the group's 5D "sweet spot", but also artificially inject variance (min/max feature bounds) to pull in songs slightly outside the cluster. Ensure pagination/infinite scrolling guarantees recommendations never run out.
+  - **Gate**: Algorithm outputs a continuous, paginated stream of tracks with controlled variance.
+- [ ] **Task 2.3: Scoring via Misery Penalty & Online Feedback**
+  - **Goal**: Score the mixed candidate pool while respecting individual vetoes.
+  - **Action**: Pass the candidate pool to the AI Engine. The recently built "Misery Penalty" will naturally veto tracks that hit an individual's hard dislikes (e.g., someone hating high acousticness will crash the track's party score). As users interact with the edge-case variance tracks, trigger the existing `submitFeedback` endpoint to dynamically shift their GMM profile.
+  - **Gate**: Endpoint returns a ranked list where individual hard-dislikes are correctly penalized, and user feedback successfully shifts the GMM.
 
 ### Phase 3: Frontend Integration
 - [ ] **Task 3.1: Spotify OAuth & Login**

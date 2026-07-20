@@ -254,7 +254,7 @@ def apply_feedback(user_gmm: Dict[str, Any], track_features: Any, action: str) -
         "covariances": user_gmm["covariances"]
     }
 
-def compute_search_targets(primary_user: Dict[str, Any], secondary_users: List[Dict[str, Any]]) -> Dict[str, Any]:
+def compute_search_targets(group_clusters, primary_user_limits):
     """
     Computes search targets for Spotify recommendations.
     
@@ -263,33 +263,26 @@ def compute_search_targets(primary_user: Dict[str, Any], secondary_users: List[D
     3. Intentionally injects "Discovery" targets that slightly exceed these limits to allow their profile to shift.
     4. Outputs target feature arrays for both "Safe" and "Discovery" tracks.
     """
-    if "means" not in primary_user:
-        return {"safe": [], "discovery": []}
+    safe_targets = {}
+    if not group_clusters:
+        return {"safe": {}, "discovery": {}}
         
-    all_users = [primary_user] + secondary_users
-    all_means = []
-    
-    for u in all_users:
-        if "means" in u:
-            all_means.extend(u["means"])
+    # 1. Average of overlapping clusters (mean)
+    keys = group_clusters[0].keys()
+    for k in keys:
+        safe_targets[k] = sum(c.get(k, 0) for c in group_clusters) / len(group_clusters)
+        
+    # 2. Strict filter based on primary user limits
+    if 'max_acousticness' in primary_user_limits and 'acousticness' in safe_targets:
+        if safe_targets['acousticness'] > primary_user_limits['max_acousticness']:
+            safe_targets['acousticness'] = primary_user_limits['max_acousticness']
             
-    if len(all_means) > 0:
-        group_mean = np.mean(all_means, axis=0)
-    else:
-        group_mean = np.array([0.5, 0.5, 0.5, 0.5, 0.0])
+    # 3. Discovery targets that slightly exceed limits
+    discovery_targets = safe_targets.copy()
+    for k in discovery_targets:
+        discovery_targets[k] = min(1.0, discovery_targets[k] + 0.1)
         
-    primary_means = np.array(primary_user["means"])
-    primary_max = np.max(primary_means, axis=0)
-    primary_min = np.min(primary_means, axis=0)
-    
-    # Safe targets: strictly limit/cap the group mean to the primary user's extremes
-    safe_target = np.clip(group_mean, primary_min, primary_max)
-    
-    # Discovery targets: intentionally exceed the limits (e.g. +10% energy/danceability)
-    discovery_target = safe_target + np.array([0.1, 0.1, 0.0, -0.1, 0.0])
-    discovery_target = np.clip(discovery_target, 0.0, 1.0)
-    
     return {
-        "safe": safe_target.tolist(),
-        "discovery": discovery_target.tolist()
+        "safe": safe_targets,
+        "discovery": discovery_targets
     }

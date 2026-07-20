@@ -4,8 +4,9 @@ async function testPipeline() {
     try {
         console.log("Starting Task 2.3 Live Verification...");
         
-        // Attempt to call the live API endpoint (server must be running on port 3001 or fallback port)
-        const res = await axios.post('http://localhost:3001/api/recommend/generate', {
+        // Attempt to call the live API endpoint
+        const baseUrl = process.env.BACKEND_URL || 'https://musync-backend.onrender.com';
+        const res = await axios.post(`${baseUrl}/api/recommend/generate`, {
             groupId: 'test-group',
             genre: 'pop'
         }, {

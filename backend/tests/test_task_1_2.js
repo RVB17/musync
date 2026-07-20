@@ -3,7 +3,8 @@ const axios = require('axios');
 async function testInvites() {
     console.log("Starting Task 1.2 Live Verification (Invites Endpoints)...");
     try {
-        const res = await axios.post('http://localhost:3001/api/groups/invite', {
+        const baseUrl = process.env.BACKEND_URL || 'https://musync-backend.onrender.com';
+        const res = await axios.post(`${baseUrl}/api/groups/invite`, {
             groupId: 'test-group',
             toUserId: 'test-user-2'
         }, {

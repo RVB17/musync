@@ -3,7 +3,8 @@ const axios = require('axios');
 async function testCF() {
     console.log("Starting Task 1.3 Live Verification (CF Endpoint)...");
     try {
-        const res = await axios.get('http://localhost:3001/api/recommend/similar-users', {
+        const baseUrl = process.env.BACKEND_URL || 'https://musync-backend.onrender.com';
+        const res = await axios.get(`${baseUrl}/api/recommend/similar-users`, {
             headers: { 'Authorization': 'Bearer test-token' }
         });
         

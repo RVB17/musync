@@ -41,9 +41,13 @@ app.use('/groups', requireAuth, groupsRouter);
 app.use('/parties', requireAuth, partiesRouter);
 app.use('/users', usersRouter); // Some user routes (like signup/login) might need to remain open, handle inside users.js
 app.use('/', requireAuth, invitesRouter);
+app.use('/api', requireAuth, invitesRouter);
 app.use('/api/recommend', requireAuth, recommendRoutes);
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Backend running on 0.0.0.0:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Backend running on 0.0.0.0:${PORT}`);
+  });
+}
+module.exports = app;

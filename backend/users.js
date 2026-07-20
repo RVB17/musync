@@ -63,25 +63,6 @@ router.post('/remove-friend', requireAuth, async (req, res) => {
   }
 });
 
-// Get user by id
-router.get('/:id', requireAuth, async (req, res) => {
-  const { data: safeUser, error } = await supabase.from('users').select('*').eq('id', req.params.id).single();
-  if (safeUser) {
-    res.json(safeUser);
-  } else res.status(404).json({ error: 'User not found' });
-});
-
-// Get friends for a user
-router.get('/:id/friends', requireAuth, async (req, res) => {
-  const { data: user } = await supabase.from('users').select('friends').eq('id', req.params.id).single();
-  if (user && user.friends && user.friends.length > 0) {
-    const { data: friends } = await supabase.from('users').select('id, username, email, avatar, bio').in('id', user.friends);
-    res.json(friends || []);
-  } else {
-    res.json([]);
-  }
-});
-
 // Get top tracks features
 router.get('/top-tracks', requireAuth, async (req, res) => {
   const userId = req.user.id;
@@ -99,6 +80,25 @@ router.get('/top-tracks', requireAuth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch top tracks' });
+  }
+});
+
+// Get user by id
+router.get('/:id', requireAuth, async (req, res) => {
+  const { data: safeUser, error } = await supabase.from('users').select('*').eq('id', req.params.id).single();
+  if (safeUser) {
+    res.json(safeUser);
+  } else res.status(404).json({ error: 'User not found' });
+});
+
+// Get friends for a user
+router.get('/:id/friends', requireAuth, async (req, res) => {
+  const { data: user } = await supabase.from('users').select('friends').eq('id', req.params.id).single();
+  if (user && user.friends && user.friends.length > 0) {
+    const { data: friends } = await supabase.from('users').select('id, username, email, avatar, bio').in('id', user.friends);
+    res.json(friends || []);
+  } else {
+    res.json([]);
   }
 });
 

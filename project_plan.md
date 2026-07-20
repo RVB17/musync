@@ -101,7 +101,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Allow users to steer their recommendations via likes/dislikes.
   - **Action**: Create `POST /api/users/feedback` in Express to accept batched votes (+1/-1) and track IDs. Create `POST /update-taste` in the Python AI Engine to adjust the user's GMM weights mathematically based on the batched features.
   - **Gate**: A batch of positive/negative feedback successfully shifts the user's GMM profile in Supabase.
-- [ ] **Task 5.4: Feedback UI (Music Player)**
+- [x] **Task 5.4: Feedback UI (Music Player)**
   - **Goal**: Connect user inputs to the new feedback loop.
   - **Action**: Add "Thumbs Up" and "Thumbs Down" buttons to `MusicPlayer.tsx`. Cache votes locally and send batched requests to `/api/users/feedback` every 5 votes (or on app background).
   - **Gate**: Tapping thumbs up/down updates local cache and successfully fires the batch network request.

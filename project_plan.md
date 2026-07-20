@@ -75,7 +75,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Gate**: Genre chips populate correctly, preview modal opens, and track previews play successfully.
 
 ### Phase 4: Comprehensive End-to-End Validation
-- [ ] **Task 4.1: Backend Integration Suite**
+- [x] **Task 4.1: Backend Integration Suite**
   - **Goal**: Ensure the entire Node.js backend operates perfectly.
   - **Action**: Write Jest/Supertest suites to mock a Spotify OAuth flow, build a taste profile via the Python Engine, create a group, send/accept invites, and request a party recommendation.
   - **Gate**: 100% of critical API paths pass.

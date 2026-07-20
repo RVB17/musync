@@ -79,7 +79,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Ensure the entire Node.js backend operates perfectly.
   - **Action**: Write Jest/Supertest suites to mock a Spotify OAuth flow, build a taste profile via the Python Engine, create a group, send/accept invites, and request a party recommendation.
   - **Gate**: 100% of critical API paths pass.
-- [ ] **Task 4.2: Frontend E2E Suite**
+- [x] **Task 4.2: Frontend E2E Suite**
   - **Goal**: Ensure the React Native UI flows flawlessly.
   - **Action**: Write UI tests using React Native Testing Library to simulate user taps from Login -> Profile -> Group Creation -> Playing a Recommendation.
   - **Gate**: All core user flows pass without crashes or hanging states.

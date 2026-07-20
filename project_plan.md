@@ -32,7 +32,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Gate**: API returns a sorted list of similar users given a valid JWT.
 
 ### Phase 2: Intelligent Candidate Generation
-- [ ] **Task 2.1: Spotify API Integration for Backend**
+- [x] **Task 2.1: Spotify API Integration for Backend**
   - **Goal**: Allow backend to fetch data from Spotify on behalf of users.
   - **Action**: Implement helper functions to use a user's `spotify_refresh_token` to get an access token, then fetch their top artists and genres (including sub-genres).
   - **Gate**: Function successfully retrieves top genres for a mock user from Spotify.

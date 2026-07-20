@@ -65,7 +65,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Allow users to build their taste profile.
   - **Action**: Update `ProfileScreen.tsx`. Fetch user's top tracks from Spotify via backend, then call `/users/build-taste` to train the GMM. Display success state.
   - **Gate**: User's GMM profile is populated in Supabase after clicking "Build Profile".
-- [ ] **Task 3.3: Groups, Parties & Invites UI**
+- [x] **Task 3.3: Groups, Parties & Invites UI**
   - **Goal**: Connect the social screens to the backend.
   - **Action**: Wire up `GroupsScreen`, `CreateGroupScreen`, and add a new `PartyScreen` and `InvitesScreen`.
   - **Gate**: User can create a group, invite a friend, and the friend can accept the invite via the UI.

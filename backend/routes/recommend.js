@@ -107,4 +107,42 @@ router.post('/feedback', async (req, res) => {
   }
 });
 
+// GET /api/recommend/similar-users
+router.get('/similar-users', async (req, res) => {
+  try {
+    const userId = req.user.id; // Security: Use authenticated user's ID
+    
+    // Fetch all users to get their GMM profiles
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, username, gmm_profile');
+      
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+    
+    // Find the current user's GMM
+    const currentUser = users.find(u => u.id === userId);
+    if (!currentUser || !currentUser.gmm_profile || Object.keys(currentUser.gmm_profile).length === 0) {
+      return res.status(400).json({ error: "User GMM profile not found or empty." });
+    }
+    
+    // Construct globalGmms map
+    const globalGmms = {};
+    users.forEach(u => {
+      if (u.id !== userId && u.gmm_profile && Object.keys(u.gmm_profile).length > 0) {
+        globalGmms[u.id] = u.gmm_profile;
+      }
+    });
+    
+    // Call AI Client to get similarities
+    const matches = await aiClient.getSimilarUsers(currentUser.gmm_profile, globalGmms);
+    
+    res.json(matches);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
 module.exports = router;

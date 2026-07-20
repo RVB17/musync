@@ -26,7 +26,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Rewrite `backend/invites.js` to use Supabase.
   - **Action**: Implement POST and GET routes using the new invite tables. Update accept logic to add users to groups/parties in the database correctly.
   - **Gate**: Unit tests pass for sending, retrieving, and accepting invites.
-- [ ] **Task 1.3: Expose Collaborative Filtering (CF)**
+- [x] **Task 1.3: Expose Collaborative Filtering (CF)**
   - **Goal**: Connect the frontend to the AI engine's CF matching.
   - **Action**: Add an Express route (`GET /api/recommend/similar-users`) that fetches the current user's GMM, fetches all other users' GMMs from Supabase, and calls `aiClient.getSimilarUsers()`.
   - **Gate**: API returns a sorted list of similar users given a valid JWT.

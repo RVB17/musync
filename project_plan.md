@@ -73,3 +73,17 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Display recommended songs, dynamic genre chips, and allow playback.
   - **Action**: Add horizontal scrollable "Genre" chips (suggested from group's common genres). When clicked, display a preview modal of recommended songs with a "Shuffle" button. Connect `MusicPlayer.tsx` to play 30s previews using `expo-av`.
   - **Gate**: Genre chips populate correctly, preview modal opens, and track previews play successfully.
+
+### Phase 4: Comprehensive End-to-End Validation
+- [ ] **Task 4.1: Backend Integration Suite**
+  - **Goal**: Ensure the entire Node.js backend operates perfectly.
+  - **Action**: Write Jest/Supertest suites to mock a Spotify OAuth flow, build a taste profile via the Python Engine, create a group, send/accept invites, and request a party recommendation.
+  - **Gate**: 100% of critical API paths pass.
+- [ ] **Task 4.2: Frontend E2E Suite**
+  - **Goal**: Ensure the React Native UI flows flawlessly.
+  - **Action**: Write UI tests using React Native Testing Library to simulate user taps from Login -> Profile -> Group Creation -> Playing a Recommendation.
+  - **Gate**: All core user flows pass without crashes or hanging states.
+- [ ] **Task 4.3: Full Stack Dry Run**
+  - **Goal**: Final manual/automated verification.
+  - **Action**: Boot the frontend, backend, and AI engine locally and run a complete simulated user session end-to-end.
+  - **Gate**: The application behaves exactly as intended and is production-ready.

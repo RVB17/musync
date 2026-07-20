@@ -69,7 +69,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Connect the social screens to the backend.
   - **Action**: Wire up `GroupsScreen`, `CreateGroupScreen`, and add a new `PartyScreen` and `InvitesScreen`.
   - **Gate**: User can create a group, invite a friend, and the friend can accept the invite via the UI.
-- [ ] **Task 3.4: Recommendations & Playback UI (Apple Music Style)**
+- [x] **Task 3.4: Recommendations & Playback UI (Apple Music Style)**
   - **Goal**: Display recommended songs, dynamic genre chips, and allow playback.
   - **Action**: Add horizontal scrollable "Genre" chips (suggested from group's common genres). When clicked, display a preview modal of recommended songs with a "Shuffle" button. Connect `MusicPlayer.tsx` to play 30s previews using `expo-av`.
   - **Gate**: Genre chips populate correctly, preview modal opens, and track previews play successfully.

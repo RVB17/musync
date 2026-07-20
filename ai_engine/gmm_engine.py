@@ -253,3 +253,43 @@ def apply_feedback(user_gmm: Dict[str, Any], track_features: Any, action: str) -
         "means": means.tolist(),
         "covariances": user_gmm["covariances"]
     }
+
+def compute_search_targets(primary_user: Dict[str, Any], secondary_users: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Computes search targets for Spotify recommendations.
+    
+    1. Calculates the mathematical average (mean) of overlapping clusters for the group (the "Safe" zone).
+    2. Applies a strict filter based on the primary user's GMM limits (e.g., cap acousticness if they hate it).
+    3. Intentionally injects "Discovery" targets that slightly exceed these limits to allow their profile to shift.
+    4. Outputs target feature arrays for both "Safe" and "Discovery" tracks.
+    """
+    if "means" not in primary_user:
+        return {"safe": [], "discovery": []}
+        
+    all_users = [primary_user] + secondary_users
+    all_means = []
+    
+    for u in all_users:
+        if "means" in u:
+            all_means.extend(u["means"])
+            
+    if len(all_means) > 0:
+        group_mean = np.mean(all_means, axis=0)
+    else:
+        group_mean = np.array([0.5, 0.5, 0.5, 0.5, 0.0])
+        
+    primary_means = np.array(primary_user["means"])
+    primary_max = np.max(primary_means, axis=0)
+    primary_min = np.min(primary_means, axis=0)
+    
+    # Safe targets: strictly limit/cap the group mean to the primary user's extremes
+    safe_target = np.clip(group_mean, primary_min, primary_max)
+    
+    # Discovery targets: intentionally exceed the limits (e.g. +10% energy/danceability)
+    discovery_target = safe_target + np.array([0.1, 0.1, 0.0, -0.1, 0.0])
+    discovery_target = np.clip(discovery_target, 0.0, 1.0)
+    
+    return {
+        "safe": safe_target.tolist(),
+        "discovery": discovery_target.tolist()
+    }

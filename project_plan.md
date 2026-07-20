@@ -36,7 +36,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Allow backend to fetch data from Spotify on behalf of users.
   - **Action**: Implement helper functions to use a user's `spotify_refresh_token` to get an access token, then fetch their top artists and genres (including sub-genres).
   - **Gate**: Function successfully retrieves top genres for a mock user from Spotify.
-- [ ] **Task 2.2: Compute Search Targets (Cluster Overlap & Discovery)**
+- [x] **Task 2.2: Compute Search Targets (Cluster Overlap & Discovery)**
   - **Goal**: Find GMM cluster sweet spots and ensure recommendations never run out.
   - **Action**: 
     - Calculate the mathematical average of overlapping clusters for the group (the "safe" zone).

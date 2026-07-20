@@ -22,7 +22,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
        - Ensure `UPDATE` policies for `parties` and `groups` only allow members/hosts to modify them, not just any authenticated user.
        - Ensure `SELECT` policies for `groups` only allow members to view them.
   - **Gate**: Supabase SQL script runs successfully; tables and columns exist in the database, and RLS policies are secure.
-- [ ] **Task 1.2: Fix Invites System**
+- [x] **Task 1.2: Fix Invites System**
   - **Goal**: Rewrite `backend/invites.js` to use Supabase.
   - **Action**: Implement POST and GET routes using the new invite tables. Update accept logic to add users to groups/parties in the database correctly.
   - **Gate**: Unit tests pass for sending, retrieving, and accepting invites.

@@ -1,4 +1,4 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
@@ -8,25 +8,32 @@ export default function AppTabs() {
   const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
 
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
+    <Tabs
+      screenOptions={{
+        tabBarStyle: { backgroundColor: colors.background },
+        tabBarActiveTintColor: colors.text,
+      }}>
+      
+      <Tabs.Screen 
+        name="parties" 
+        options={{ title: "Parties" }} 
+      />
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <Tabs.Screen 
+        name="groups" 
+        options={{ title: "Groups" }} 
+      />
+
+      <Tabs.Screen 
+        name="discover" 
+        options={{ title: "Discover" }} 
+      />
+
+      <Tabs.Screen 
+        name="profile" 
+        options={{ title: "Profile" }} 
+      />
+
+    </Tabs>
   );
 }

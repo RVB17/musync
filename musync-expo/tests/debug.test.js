@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
-import LoginScreen from '../screens/LoginScreen';
+import AppTabs from '../src/components/app-tabs';
 
-describe('debug', () => {
-    it('shows keys', async () => {
-        await render(<LoginScreen />);
-        console.log(!!screen.getByPlaceholderText(/email/i));
+describe('Task 5.2 debug', () => {
+    it('debugs app tabs', async () => {
+        await render(<AppTabs />);
+        screen.debug();
     });
 });

@@ -93,7 +93,7 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
   - **Goal**: Fix version mismatches and detach Spotify from initial signup.
   - **Action**: Run `npx expo install --fix`. Update `LoginScreen.tsx` to use Supabase Email/Password or Social Auth. Move Spotify PKCE OAuth connection to `ProfileScreen.tsx`.
   - **Gate**: User can sign up without a Spotify account, then connect Spotify later.
-- [ ] **Task 5.2: Bottom Tab Navigation (Instagram Style)**
+- [x] **Task 5.2: Bottom Tab Navigation (Instagram Style)**
   - **Goal**: Transition from stack to bottom tabs.
   - **Action**: Install `@react-navigation/bottom-tabs`. Rewrite `AppNavigator.tsx` to feature 4 main tabs: `Parties`, `Groups`, `Discover`, and `Profile`.
   - **Gate**: Bottom tab bar renders and successfully navigates between the four empty/placeholder screens.

@@ -13,10 +13,15 @@ This document outlines the architecture, algorithmic needs, and task-by-task exe
 ## Task Breakdown
 
 ### Phase 1: Foundation & Backend Fixes
-- [ ] **Task 1.1: Database Schema Overhaul**
-  - **Goal**: Fix missing schema elements.
-  - **Action**: Add `spotify_refresh_token` to the `users` table. Create new tables `group_invites` and `party_invites` to replace the broken in-memory arrays.
-  - **Gate**: Supabase SQL script runs successfully; tables and columns exist in the database.
+- [x] **Task 1.1: Database Schema Overhaul**
+  - **Goal**: Fix missing schema elements and secure RLS policies.
+  - **Action**: 
+    1. Add `spotify_refresh_token` to the `users` table. Create new tables `group_invites` and `party_invites` to replace the broken in-memory arrays.
+    2. **Fix RLS Vulnerabilities**: 
+       - Restrict public access to sensitive columns (like `spotify_refresh_token` and `email`) in the `users` table (e.g. by separating them or restricting select).
+       - Ensure `UPDATE` policies for `parties` and `groups` only allow members/hosts to modify them, not just any authenticated user.
+       - Ensure `SELECT` policies for `groups` only allow members to view them.
+  - **Gate**: Supabase SQL script runs successfully; tables and columns exist in the database, and RLS policies are secure.
 - [ ] **Task 1.2: Fix Invites System**
   - **Goal**: Rewrite `backend/invites.js` to use Supabase.
   - **Action**: Implement POST and GET routes using the new invite tables. Update accept logic to add users to groups/parties in the database correctly.
